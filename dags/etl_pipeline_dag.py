@@ -37,8 +37,9 @@ with models.DAG(
             'inputPort': '5433',
             'inputUser': 'radichealthcare_rearburied',
             'inputPassword': '0faa3d7a3228960d4e6049300dfce8887de942b2',
-            'outputTable': 'your_project:healthcare_dataset.fact_encounter',
+            'outputTable': 'radic-healthcare:healthcare_dataset.fact_encounter',
             'runner': 'DataflowRunner',
+             'etlScriptsPath': 'gs://bucket-radic-healthcare/etl/'
         }
     )
 
