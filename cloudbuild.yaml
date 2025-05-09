@@ -1,9 +1,12 @@
 steps:
 - name: 'gcr.io/cloud-builders/git'
-  args: ['clone', 'https://github.com/<your-username>/radichealth_etl.git']
+  args: ['clone', 'https://github.com/dunjil/radic-health-gcp-pipeline.git']
 
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['cp', '-r', 'radichealth_etl/etl', 'gs://your-bucket-name/etl/']
+  args: ['cp', '-r', 'radichealth_etl/etl', 'gs://bucket-radic-healthcare/etl/']
+
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', 'radichealth_etl/sql/create_star_schema.sql', 'gs://bucket-radic-healthcare/sql/']
 
 - name: 'gcr.io/cloud-builders/gcloud'
   args: ['dataflow', 'jobs', 'run', 'radichealth-etl-{{ ds_nodash }}',
