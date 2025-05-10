@@ -4,6 +4,5 @@ apache-airflow[gcp]
 psycopg2-binary
 pandas
 sqlalchemy
-apache-airflow
 loguru
 jupyter
