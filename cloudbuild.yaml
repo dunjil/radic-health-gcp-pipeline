@@ -2,17 +2,20 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-# - name: 'gcr.io/cloud-builders/git'
-#   args: ['clone', 'https://github.com/dunjil/radic-health-gcp-pipeline.git']
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['-m', 'cp', '-r', 'etl', 'gs://bucket-radic-healthcare/etl/']
 
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['cp', '-r', 'radic-health-gcp-pipeline/etl', 'gs://bucket-radic-healthcare/etl/']
+  args: ['-m', 'cp', '-r', 'sql', 'gs://bucket-radic-healthcare/sql/']
 
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['cp', 'radic-health-gcp-pipeline/sql/create_star_schema.sql', 'gs://bucket-radic-healthcare/sql/']
+  args: ['cp', 'requirements.txt', 'gs://bucket-radic-healthcare/requirements/']
 
-# - name: 'gcr.io/cloud-builders/gcloud'
-#   args: ['dataflow', 'jobs', 'run', 'radichealth-etl-{{ ds_nodash }}',
-#          '--gcs-location=gs://bucket-radic-healthcare/templates/postgres_to_bq_template',
-#          '--parameters=inputDatabase=radichealthcare_rearburied,inputHost=olye3.h.filess.io,inputPort=5433,inputUser=radichealthcare_rearburied,inputPassword=0faa3d7a3228960d4e6049300dfce8887de942b2,outputTable=us-central1:healthcare_dataset.fact_encounter,runner=DataflowRunner,etlScriptsPath=gs://bucket-radic-healthcare/etl/',
-#          '--region=us-central1']
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', 'README.md', 'gs://bucket-radic-healthcare/docs/']
+
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', 'cloudbuild.yaml', 'gs://bucket-radic-healthcare/configs/']
+
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['-m', 'cp', '-r', 'dags', 'gs://bucket-radic-healthcare/dags/']
