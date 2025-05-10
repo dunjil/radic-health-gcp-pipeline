@@ -57,7 +57,6 @@ with models.DAG(
 
     # Define ETL tasks
     etl_tasks = [
-        make_dataflow_task('etl_date', 'etl_date'),
         make_dataflow_task('etl_diagnosis', 'etl_diagnosis'),
         make_dataflow_task('etl_facility', 'etl_facility'),
         make_dataflow_task('etl_fact_encounter', 'etl_fact_encounter'),
