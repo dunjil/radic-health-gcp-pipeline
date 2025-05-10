@@ -18,4 +18,24 @@ steps:
   args: ['cp', 'cloudbuild.yaml', 'gs://bucket-radic-healthcare/configs/']
 
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['-m', 'cp', '-r', 'dags', 'gs://bucket-radic-healthcare/dags/']
+  args: ['-m', 'cp', '-r', 'dags/', 'gs://us-central1-radichealth-pip-2ec2639b-bucket/dags/']
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+    - 'composer'
+    - 'environments'
+    - 'update'
+    - 'radichealth-pipeline'
+    - '--location=us-central1'
+    - '--update-pypi-packages-from-file=requirements.txt'
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+    - 'composer'
+    - 'environments'
+    - 'run'
+    - 'radichealth-pipeline'
+    - '--location=us-central1'
+    - 'trigger_dag'
+    - '--'
+    - 'radichealth_etl_daily'
