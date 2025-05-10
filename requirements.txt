@@ -1,6 +1,5 @@
 google-cloud-bigquery
 apache-beam[gcp]
-apache-airflow[gcp]
 psycopg2-binary
 pandas
 sqlalchemy
