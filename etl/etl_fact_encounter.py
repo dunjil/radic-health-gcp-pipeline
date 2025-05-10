@@ -5,7 +5,7 @@ import psycopg2
 class ReadFromPostgres(beam.DoFn):
     def process(self, element):
         conn = psycopg2.connect(
-            dbname="radichealthcare_rearburied",
+            database="radichealthcare_rearburied",
             user="radichealthcare_rearburied",
             password="0faa3d7a3228960d4e6049300dfce8887de942b2",
             host="olye3.h.filess.io",
@@ -38,7 +38,7 @@ def run():
         runner='DataflowRunner',
         project='radic-healthcare',
         temp_location='gs://bucket-radic-healthcare/tmp/',
-        region='your-region'
+        region='us-central1'
     )
     
     with beam.Pipeline(options=options) as p:
@@ -48,7 +48,7 @@ def run():
             | 'ReadFromPostgres' >> beam.ParDo(ReadFromPostgres())
             | 'TransformEncounter' >> beam.ParDo(TransformEncounter())
             | 'WriteToBigQuery' >> beam.io.WriteToBigQuery(
-                'your_project.healthcare_dataset.fact_encounter',
+                'radic-healthcare.healthcare_dataset.fact_encounter',
                 schema='encounter_id:INTEGER,date_id:DATE,patient_id:INTEGER,provider_id:INTEGER,facility_id:INTEGER,primary_diagnosis_id:INTEGER,encounter_type:STRING,admission_date:TIMESTAMP,discharge_date:TIMESTAMP,length_of_stay:INTEGER,total_charges:FLOAT,total_payments:FLOAT,insurance_type:STRING,load_timestamp:TIMESTAMP',
                 write_disposition=beam.io.BigQueryDisposition.WRITE_APPEND,
                 create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED

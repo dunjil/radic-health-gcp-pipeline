@@ -14,5 +14,5 @@ steps:
 - name: 'gcr.io/cloud-builders/gcloud'
   args: ['dataflow', 'jobs', 'run', 'radichealth-etl-{{ ds_nodash }}',
          '--gcs-location=gs://bucket-radic-healthcare/templates/postgres_to_bq_template',
-         '--parameters=inputDatabase=radichealthcare_rearburied,inputHost=olye3.h.filess.io,inputPort=5433,inputUser=radichealthcare_rearburied,inputPassword=0faa3d7a3228960d4e6049300dfce8887de942b2,outputTable=your_project:healthcare_dataset.fact_encounter,runner=DataflowRunner,etlScriptsPath=gs://bucket-radic-healthcare/etl/',
+         '--parameters=inputDatabase=radichealthcare_rearburied,inputHost=olye3.h.filess.io,inputPort=5433,inputUser=radichealthcare_rearburied,inputPassword=0faa3d7a3228960d4e6049300dfce8887de942b2,outputTable=us-central1:healthcare_dataset.fact_encounter,runner=DataflowRunner,etlScriptsPath=gs://bucket-radic-healthcare/etl/',
          '--region=us-central1']

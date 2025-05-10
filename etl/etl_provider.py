@@ -29,7 +29,7 @@ def run():
         runner='DataflowRunner',
         project='radic-healthcare',
         temp_location='gs://bucket-radic-healthcare/tmp/',
-        region='your-region'
+        region='us-central1'
     )
     
     with beam.Pipeline(options=options) as p:
@@ -39,7 +39,7 @@ def run():
             | 'ReadProviders' >> beam.ParDo(ReadProviders())
             | 'Transform' >> beam.ParDo(TransformProvider())
             | 'WriteToBQ' >> beam.io.WriteToBigQuery(
-                'your_project.healthcare_dataset.dim_provider',
+                'radic-healthcare.healthcare_dataset.dim_provider',
                 write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE,
                 create_disposition=beam.io.BigQueryDisposition.CREATE_NEVER
             )
