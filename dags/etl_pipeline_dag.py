@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 from airflow import models
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.empty import EmptyOperator
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
-from airflow.providers.google.cloud.operators.dataflow import DataflowTemplatedJobStartOperator
-from airflow.providers.google.cloud.operators.dataflow import DataflowPythonOperator
+from airflow.providers.google.cloud.operators.dataflow import DataflowCreatePipelineOperator
 
 default_args = {
     'owner': 'radichealth',
@@ -14,17 +13,23 @@ default_args = {
 }
 
 def make_dataflow_task(task_id, script_name):
-    return DataflowPythonOperator(
+    return DataflowCreatePipelineOperator(
         task_id=task_id,
-        py_file=f'gs://bucket-radic-healthcare/etl/{script_name}.py',
-        project_id='radic-healthcare',
-        location='us-central1',
-        job_name=f'{task_id}-{{{{ ds_nodash }}}}',
-        options={
-            'runner': 'DataflowRunner',
-            'temp_location': 'gs://bucket-radic-healthcare/temp/',
-            'staging_location': 'gs://bucket-radic-healthcare/staging/',
-            # You can also pass input/output/table options if needed
+        body={
+            "jobName": f'{task_id}-{{{{ ds_nodash }}}}',
+            "projectId": 'radic-healthcare',
+            "location": 'us-central1',
+            "environment": {
+                "tempLocation": 'gs://bucket-radic-healthcare/temp/',
+                "stagingLocation": 'gs://bucket-radic-healthcare/staging/',
+            },
+            "pipeline": {
+                "script": f'gs://bucket-radic-healthcare/etl/{script_name}.py',
+                "options": {
+                    'runner': 'DataflowRunner',
+                    # Add other options as needed
+                }
+            }
         }
     )
 
@@ -37,7 +42,7 @@ with models.DAG(
     tags=['radichealth', 'etl', 'dataflow', 'bigquery']
 ) as dag:
 
-    start = DummyOperator(task_id='start')
+    start = EmptyOperator(task_id='start')
 
     create_schema = BigQueryInsertJobOperator(
         task_id='create_star_schema',
@@ -60,7 +65,7 @@ with models.DAG(
         make_dataflow_task('etl_provider', 'etl_provider'),
     ]
 
-    end = DummyOperator(task_id='end')
+    end = EmptyOperator(task_id='end')
 
     # DAG dependencies
     start >> create_schema >> etl_tasks >> end
