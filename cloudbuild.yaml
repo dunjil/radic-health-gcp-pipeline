@@ -2,8 +2,8 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-- name: 'gcr.io/cloud-builders/git'
-  args: ['clone', 'https://github.com/dunjil/radic-health-gcp-pipeline.git']
+# - name: 'gcr.io/cloud-builders/git'
+#   args: ['clone', 'https://github.com/dunjil/radic-health-gcp-pipeline.git']
 
 - name: 'gcr.io/cloud-builders/gsutil'
   args: ['cp', '-r', 'radichealth_etl/etl', 'gs://bucket-radic-healthcare/etl/']
