@@ -3,6 +3,7 @@ from airflow import models
 from airflow.operators.dummy import DummyOperator
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
 from airflow.providers.google.cloud.operators.dataflow import DataflowTemplatedJobStartOperator
+from airflow.providers.google.cloud.operators.dataflow import DataflowPythonOperator
 
 default_args = {
     'owner': 'radichealth',
@@ -13,21 +14,17 @@ default_args = {
 }
 
 def make_dataflow_task(task_id, script_name):
-    return DataflowTemplatedJobStartOperator(
+    return DataflowPythonOperator(
         task_id=task_id,
-        template='gs://bucket-radic-healthcare/templates/postgres_to_bq_template',
+        py_file=f'gs://bucket-radic-healthcare/etl/{script_name}.py',
         project_id='radic-healthcare',
-        region='us-central1',
+        location='us-central1',
         job_name=f'{task_id}-{{{{ ds_nodash }}}}',
-        parameters={
-            'inputDatabase': 'radichealthcare_rearburied',
-            'inputHost': 'olye3.h.filess.io',
-            'inputPort': '5433',
-            'inputUser': 'radichealthcare_rearburied',
-            'inputPassword': '0faa3d7a3228960d4e6049300dfce8887de942b2',
-            'outputTable': f'radic-healthcare:healthcare_dataset.{script_name}',
+        options={
             'runner': 'DataflowRunner',
-            'etlScriptsPath': f'gs://bucket-radic-healthcare/etl/{script_name}.py'
+            'temp_location': 'gs://bucket-radic-healthcare/temp/',
+            'staging_location': 'gs://bucket-radic-healthcare/staging/',
+            # You can also pass input/output/table options if needed
         }
     )
 
