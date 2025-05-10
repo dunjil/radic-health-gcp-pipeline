@@ -3,10 +3,10 @@ options:
 
 steps:
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['-m', 'cp', '-r', 'etl', 'gs://bucket-radic-healthcare/etl/']
+  args: ['-m', 'cp', '-r', 'etl/', 'gs://bucket-radic-healthcare/etl/']
 
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['-m', 'cp', '-r', 'sql', 'gs://bucket-radic-healthcare/sql/']
+  args: ['-m', 'cp', '-r', 'sql/', 'gs://bucket-radic-healthcare/sql/']
 
 - name: 'gcr.io/cloud-builders/gsutil'
   args: ['cp', 'requirements.txt', 'gs://bucket-radic-healthcare/requirements/']
