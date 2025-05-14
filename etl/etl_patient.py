@@ -15,7 +15,7 @@ class ReadFromPostgres(beam.DoFn):
             port="5433"
         )
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM patient")
+        cursor.execute("SELECT * FROM healthcare.patients")
         columns = [desc[0] for desc in cursor.description]
         for row in cursor.fetchall():
             yield dict(zip(columns, row))

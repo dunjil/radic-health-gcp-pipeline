@@ -14,7 +14,7 @@ class ReadFacilities(beam.DoFn):
                 port="5433"
             )
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM facility")
+            cursor.execute("SELECT * FROM healthcare.facilities")
             columns = [desc[0] for desc in cursor.description]
             for row in cursor.fetchall():
                 yield dict(zip(columns, row))
