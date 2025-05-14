@@ -1,80 +1,63 @@
-import apache_beam as beam
-from apache_beam.options.pipeline_options import PipelineOptions
-import psycopg2
-import logging
-from datetime import datetime
+-- Dataset creation (optional if already exists)
+CREATE SCHEMA IF NOT EXISTS `radic-healthcare.healthcare_dataset`;
 
-class ReadFromPostgres(beam.DoFn):
-    def process(self, element):
-        try:
-            conn = psycopg2.connect(
-                database="radichealthcare_rearburied",
-                user="radichealthcare_rearburied",
-                password="0faa3d7a3228960d4e6049300dfce8887de942b2",
-                host="olye3.h.filess.io",
-                port="5433"
-            )
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM healthcare.encounters")
-            columns = [desc[0] for desc in cursor.description]
-            for row in cursor.fetchall():
-                yield dict(zip(columns, row))
-            cursor.close()
-            conn.close()
-        except Exception as e:
-            logging.error(f"Error reading from PostgreSQL: {e}")
-            raise
+-- Dimension Tables
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_patient` (
+  patient_id STRING,
+  gender STRING,
+  birth_date DATE,
+  ethnicity STRING,
+  is_deceased BOOL,
+  deceased_date DATE
+);
 
-class TransformEncounter(beam.DoFn):
-    def process(self, record):
-        try:
-            # Calculate length_of_stay
-            admission = datetime.fromisoformat(str(record["admission_date"]))
-            discharge = datetime.fromisoformat(str(record["discharge_date"]))
-            record["length_of_stay"] = (discharge - admission).days
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_provider` (
+  provider_id STRING,
+  first_name STRING,
+  last_name STRING,
+  specialty STRING,
+  npi STRING,
+  is_current BOOL
+);
 
-            # Transform the record to match the BigQuery schema
-            transformed_record = {
-                'encounter_id': str(record['id']),
-                'patient_id': str(record['patient_id']),
-                'provider_id': str(record['provider_id']),
-                'facility_id': str(record['facility_id']),
-                'diagnosis_code': str(record['primary_diagnosis_id']),
-                'admission_date': record['admission_date'].date(),
-                'discharge_date': record['discharge_date'].date(),
-                'date_key': int(record['admission_date'].strftime('%Y%m%d')),  # Example date_key format
-                'length_of_stay': record['length_of_stay'],
-                'total_charges': float(record['total_charges']),
-                'payments_received': float(record['total_payments']),
-                'insurance_type': record['insurance_type'],
-                'referral_provider_id': None  # Assuming no referral_provider_id in the source data
-            }
-            return [transformed_record]
-        except Exception as e:
-            logging.error(f"Error transforming record: {e}")
-            raise
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_facility` (
+  facility_id STRING,
+  name STRING,
+  location STRING,
+  bed_count INT64
+);
 
-def run():
-    options = PipelineOptions(
-        runner='DataflowRunner',
-        project='radic-healthcare',
-        temp_location='gs://bucket-radic-healthcare/tmp/',
-        region='us-central1'
-    )
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_diagnosis` (
+  diagnosis_code STRING,
+  description STRING,
+  category STRING,
+  is_current BOOL
+);
 
-    with beam.Pipeline(options=options) as p:
-        (
-            p
-            | 'Start' >> beam.Create([None])
-            | 'ReadFromPostgres' >> beam.ParDo(ReadFromPostgres())
-            | 'TransformEncounter' >> beam.ParDo(TransformEncounter())
-            | 'WriteToBigQuery' >> beam.io.WriteToBigQuery(
-                'radic-healthcare.healthcare_dataset.fact_encounter',
-                schema='encounter_id:STRING,patient_id:STRING,provider_id:STRING,facility_id:STRING,diagnosis_code:STRING,admission_date:DATE,discharge_date:DATE,date_key:INTEGER,length_of_stay:INTEGER,total_charges:FLOAT,payments_received:FLOAT,insurance_type:STRING,referral_provider_id:STRING',
-                write_disposition=beam.io.BigQueryDisposition.WRITE_APPEND,
-                create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED
-            )
-        )
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_date` (
+  date_key INT64,  -- e.g., 20240508
+  date_value DATE,
+  day INT64,
+  month INT64,
+  year INT64,
+  day_of_week STRING,
+  week_of_year INT64,
+  is_weekend BOOL
+);
 
-if __name__ == '__main__':
-    run()
+-- Fact Table
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.fact_encounter` (
+  encounter_id STRING,
+  patient_id STRING,
+  provider_id STRING,
+  facility_id STRING,
+  diagnosis_code STRING,
+  admission_date DATE,
+  discharge_date DATE,
+  date_key INT64, -- FK to dim_date
+  length_of_stay INT64,
+  total_charges FLOAT64,
+  payments_received FLOAT64,
+  insurance_type STRING,
+  referral_provider_id STRING
+);
