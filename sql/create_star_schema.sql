@@ -1,9 +1,9 @@
 -- Dataset creation (optional if already exists)
-CREATE SCHEMA IF NOT EXISTS `radichealth_analytics.healthcare_dataset`;
+CREATE SCHEMA IF NOT EXISTS `radic-healthcare.healthcare_dataset`;
 
 -- Dimension Tables
 
-CREATE TABLE IF NOT EXISTS `radichealth_analytics.healthcare_dataset.dim_patient` (
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_patient` (
   patient_id STRING PRIMARY KEY,
   gender STRING,
   birth_date DATE,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `radichealth_analytics.healthcare_dataset.dim_patient
   deceased_date DATE
 );
 
-CREATE TABLE IF NOT EXISTS `radichealth_analytics.healthcare_dataset.dim_provider` (
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_provider` (
   provider_id STRING PRIMARY KEY,
   first_name STRING,
   last_name STRING,
@@ -21,21 +21,21 @@ CREATE TABLE IF NOT EXISTS `radichealth_analytics.healthcare_dataset.dim_provide
   is_current BOOL
 );
 
-CREATE TABLE IF NOT EXISTS `radichealth_analytics.healthcare_dataset.dim_facility` (
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_facility` (
   facility_id STRING PRIMARY KEY,
   name STRING,
   location STRING,
   bed_count INT64
 );
 
-CREATE TABLE IF NOT EXISTS `radichealth_analytics.healthcare_dataset.dim_diagnosis` (
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_diagnosis` (
   diagnosis_code STRING PRIMARY KEY,
   description STRING,
   category STRING,
   is_current BOOL
 );
 
-CREATE TABLE IF NOT EXISTS `radichealth_analytics.healthcare_dataset.dim_date` (
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_date` (
   date_key INT64 PRIMARY KEY,  -- e.g., 20240508
   date_value DATE,
   day INT64,
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `radichealth_analytics.healthcare_dataset.dim_date` (
 
 -- Fact Table
 
-CREATE TABLE IF NOT EXISTS `radichealth_analytics.healthcare_dataset.fact_encounter` (
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.fact_encounter` (
   encounter_id STRING PRIMARY KEY,
   patient_id STRING,
   provider_id STRING,
