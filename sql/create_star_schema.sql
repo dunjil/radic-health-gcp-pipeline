@@ -2,9 +2,8 @@
 CREATE SCHEMA IF NOT EXISTS `radic-healthcare.healthcare_dataset`;
 
 -- Dimension Tables
-
 CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_patient` (
-  patient_id STRING PRIMARY KEY,
+  patient_id STRING,
   gender STRING,
   birth_date DATE,
   ethnicity STRING,
@@ -13,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_patient` (
 );
 
 CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_provider` (
-  provider_id STRING PRIMARY KEY,
+  provider_id STRING,
   first_name STRING,
   last_name STRING,
   specialty STRING,
@@ -22,21 +21,21 @@ CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_provider` (
 );
 
 CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_facility` (
-  facility_id STRING PRIMARY KEY,
+  facility_id STRING,
   name STRING,
   location STRING,
   bed_count INT64
 );
 
 CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_diagnosis` (
-  diagnosis_code STRING PRIMARY KEY,
+  diagnosis_code STRING,
   description STRING,
   category STRING,
   is_current BOOL
 );
 
 CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_date` (
-  date_key INT64 PRIMARY KEY,  -- e.g., 20240508
+  date_key INT64,  -- e.g., 20240508
   date_value DATE,
   day INT64,
   month INT64,
@@ -47,9 +46,8 @@ CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.dim_date` (
 );
 
 -- Fact Table
-
 CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.fact_encounter` (
-  encounter_id STRING PRIMARY KEY,
+  encounter_id STRING,
   patient_id STRING,
   provider_id STRING,
   facility_id STRING,
@@ -61,13 +59,5 @@ CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.fact_encounter` 
   total_charges FLOAT64,
   payments_received FLOAT64,
   insurance_type STRING,
-  referral_provider_id STRING,
-
-  -- Foreign Keys (documented only, since BigQuery doesn’t enforce constraints)
-  -- FOREIGN KEY (patient_id) REFERENCES dim_patient(patient_id),
-  -- FOREIGN KEY (provider_id) REFERENCES dim_provider(provider_id),
-  -- FOREIGN KEY (facility_id) REFERENCES dim_facility(facility_id),
-  -- FOREIGN KEY (diagnosis_code) REFERENCES dim_diagnosis(diagnosis_code),
-  -- FOREIGN KEY (date_key) REFERENCES dim_date(date_key),
-  -- FOREIGN KEY (referral_provider_id) REFERENCES dim_provider(provider_id)
+  referral_provider_id STRING
 );
