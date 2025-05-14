@@ -34,9 +34,10 @@ steps:
   args:
     - '-c'
     - |
+      # Get the access token and trigger the DAG in the same shell context
       ACCESS_TOKEN=$(gcloud auth print-access-token)
       curl -X POST \
-        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Authorization: Bearer $$ACCESS_TOKEN" \
         -H "Content-Type: application/json" \
         -d "{\"dag_run_id\": \"manual__$(date +%s)\"}" \
         "https://f418c65e1b5042db8436bec5ddbe857e-dot-us-central1.composer.googleusercontent.com/api/v1/dags/radichealth_etl_daily/dagRuns"
