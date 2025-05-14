@@ -16,6 +16,7 @@ def make_dataflow_task(task_id, script_name):
     return DataflowCreatePipelineOperator(
         task_id=task_id,
         body={
+            "name": f'{task_id}-{{{{ ds_nodash }}}}',  # Adding the required 'name' field
             "jobName": f'{task_id}-{{{{ ds_nodash }}}}',
             "projectId": 'radic-healthcare',
             "location": 'us-central1',
@@ -30,7 +31,9 @@ def make_dataflow_task(task_id, script_name):
                     # Add other options as needed
                 }
             }
-        }
+        },
+        project_id='radic-healthcare',  # Adding explicit project_id
+        location='us-central1',  # Adding explicit location
     )
 
 with models.DAG(
