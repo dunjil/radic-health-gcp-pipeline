@@ -31,11 +31,14 @@ steps:
 
 
 - name: 'gcr.io/cloud-builders/curl'
+  entrypoint: 'bash'
   args:
-    - '-X'
-    - 'POST'
-    - 'https://us-central1-radichealth-pip-2ec2639b-bucket.svc.airflow.googleapis.com/v1/dags/radichealth_etl_daily/dagRuns'
-    - '-H'
-    - 'Authorization: Bearer $(gcloud auth application-default print-access-token)'
-    - '-d'
-    - '{"conf": {}}'
+    - '-c'
+    - |
+      ACCESS_TOKEN=$(gcloud auth print-access-token)
+      curl -X POST \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d '{"dag_run_id": "manual__$(date +%s)"}' \
+        "https://f418c65e1b5042db8436bec5ddbe857e-dot-us-central1.composer.googleusercontent.com/api/v1/dags/radichealth_etl_daily/dagRuns"
+
