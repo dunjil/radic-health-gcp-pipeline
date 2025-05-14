@@ -34,19 +34,18 @@ steps:
   id: 'get-access-token'
   entrypoint: 'bash'
   args:
-      - '-c'
-      - |
-        export ACCESS_TOKEN=$(gcloud auth print-access-token)
-        echo "ACCESS_TOKEN=$ACCESS_TOKEN" > /workspace/access_token.txt
+    - '-c'
+    - |
+      gcloud auth print-access-token > /workspace/access_token.txt
 
 - name: 'gcr.io/cloud-builders/curl'
   entrypoint: 'bash'
   args:
-      - '-c'
-      - |
-        ACCESS_TOKEN=$(cat /workspace/access_token.txt)
-        curl -X POST \
-          -H "Authorization: Bearer $ACCESS_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d '{"dag_run_id": "manual__$(date +%s)"}' \
-          "https://f418c65e1b5042db8436bec5ddbe857e-dot-us-central1.composer.googleusercontent.com/api/v1/dags/radichealth_etl_daily/dagRuns"
+    - '-c'
+    - |
+      ACCESS_TOKEN=$(cat /workspace/access_token.txt)
+      curl -X POST \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "{\"dag_run_id\": \"manual__$(date +%s)\"}" \
+        "https://f418c65e1b5042db8436bec5ddbe857e-dot-us-central1.composer.googleusercontent.com/api/v1/dags/radichealth_etl_daily/dagRuns"
