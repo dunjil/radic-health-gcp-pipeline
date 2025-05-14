@@ -74,7 +74,7 @@ with models.DAG(
                 "useLegacySql": False
             }
         },
-        location="US",
+        location="us-central1",
         project_id='radic-healthcare',  # Explicitly specify the project ID
     )
 
