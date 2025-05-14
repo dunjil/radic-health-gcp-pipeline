@@ -29,21 +29,12 @@ steps:
         --location=us-central1 \
         --update-pypi-packages-from-file=requirements.txt || echo "No update needed"
 
-
-- name: 'gcr.io/cloud-builders/gcloud'
-  id: 'get-access-token'
-  entrypoint: 'bash'
-  args:
-    - '-c'
-    - |
-      gcloud auth print-access-token > /workspace/access_token.txt
-
 - name: 'gcr.io/cloud-builders/curl'
   entrypoint: 'bash'
   args:
     - '-c'
     - |
-      ACCESS_TOKEN=$(cat /workspace/access_token.txt)
+      ACCESS_TOKEN=$(gcloud auth print-access-token)
       curl -X POST \
         -H "Authorization: Bearer $ACCESS_TOKEN" \
         -H "Content-Type: application/json" \
