@@ -1,5 +1,2 @@
-google-cloud-bigquery
-apache-beam[gcp]
-psycopg2-binary
-pandas
-sqlalchemy
+apache-beam[gcp]==2.47.0
+psycopg2-binary==2.9.9
