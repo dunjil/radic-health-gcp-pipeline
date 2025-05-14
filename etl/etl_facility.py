@@ -17,7 +17,15 @@ class ReadFacilities(beam.DoFn):
             cursor.execute("SELECT * FROM healthcare.facilities")
             columns = [desc[0] for desc in cursor.description]
             for row in cursor.fetchall():
-                yield dict(zip(columns, row))
+                record = dict(zip(columns, row))
+                # Transform the record to match the BigQuery schema
+                transformed_record = {
+                    'facility_id': str(record['id']),
+                    'name': record['facility_name'],
+                    'location': f"{record['address']}, {record['city']}, {record['state']} {record['zip_code']}",
+                    'bed_count': record['bed_count']
+                }
+                yield transformed_record
             cursor.close()
             conn.close()
         except Exception as e:
@@ -39,6 +47,7 @@ def run():
             | 'ReadFacilities' >> beam.ParDo(ReadFacilities())
             | 'WriteToBQ' >> beam.io.WriteToBigQuery(
                 'radic-healthcare.healthcare_dataset.dim_facility',
+                schema='facility_id:STRING,name:STRING,location:STRING,bed_count:INTEGER',
                 write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE,
                 create_disposition=beam.io.BigQueryDisposition.CREATE_NEVER
             )
