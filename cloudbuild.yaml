@@ -38,4 +38,3 @@ steps:
     - 'Authorization: Bearer $(gcloud auth application-default print-access-token)'
     - '-d'
     - '{"conf": {}}'
-
