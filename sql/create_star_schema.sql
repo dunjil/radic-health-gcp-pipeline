@@ -26,10 +26,6 @@ CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.encounters` (
   PRIMARY KEY (`id`),
 );
 
--- Create index on encounters table
-CREATE INDEX `idx_encounters_patient_id` ON `healthcare.encounters` (`patient_id`);
-CREATE INDEX `idx_encounters_admission_date` ON `healthcare.encounters` (`admission_date`);
-
 -- Create facilities table
 CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.facilities` (
   `id` INT64,
@@ -63,9 +59,6 @@ CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.patients` (
   UNIQUE (`medical_record_number`)
 );
 
--- Create index on patients table
-CREATE INDEX `idx_patients_last_updated` ON `radic-healthcare.healthcare_dataset.patients` (`last_updated`);
-
 -- Create providers table
 CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.providers` (
   `id` INT64,
@@ -78,6 +71,3 @@ CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.providers` (
   PRIMARY KEY (`id`),
   UNIQUE (`npi_number`)
 );
-
--- Create index on providers table
-CREATE INDEX `idx_providers_last_updated` ON `radic-healthcare.healthcare_dataset.providers` (`last_updated`);
