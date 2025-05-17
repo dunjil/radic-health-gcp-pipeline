@@ -5,8 +5,7 @@ CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.diagnoses` (
   `description` STRING,
   `category` STRING,
   `is_chronic` BOOL DEFAULT FALSE,
-  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-  PRIMARY KEY (`id`)
+  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 );
 
 -- Create encounters table
@@ -22,8 +21,7 @@ CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.encounters` (
   `total_charges` NUMERIC,
   `total_payments` NUMERIC,
   `insurance_type` STRING,
-  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-  PRIMARY KEY (`id`),
+  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 );
 
 -- Create facilities table
@@ -37,8 +35,7 @@ CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.facilities` (
   `zip_code` STRING,
   `phone_number` STRING,
   `bed_count` INT64,
-  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-  PRIMARY KEY (`id`)
+  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 );
 
 -- Create patients table
@@ -54,9 +51,7 @@ CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.patients` (
   `state` STRING,
   `zip_code` STRING,
   `primary_phone` STRING,
-  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-  PRIMARY KEY (`id`),
-  UNIQUE (`medical_record_number`)
+  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 );
 
 -- Create providers table
@@ -67,7 +62,5 @@ CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.providers` (
   `last_name` STRING NOT NULL,
   `specialty` STRING,
   `department` STRING,
-  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-  PRIMARY KEY (`id`),
-  UNIQUE (`npi_number`)
+  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 );
