@@ -1,5 +1,5 @@
 -- Create diagnoses table
-CREATE TABLE IF NOT EXISTS `banded-lexicon-459415-q2.healthproject_dataset.diagnoses` (
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.diagnoses` (
   `id` INT64,
   `icd_code` STRING NOT NULL,
   `description` STRING,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS `banded-lexicon-459415-q2.healthproject_dataset.diagn
 );
 
 -- Create encounters table
-CREATE TABLE IF NOT EXISTS `banded-lexicon-459415-q2.healthproject_dataset.encounters` (
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.encounters` (
   `id` INT64,
   `patient_id` INT64,
   `provider_id` INT64,
@@ -31,7 +31,7 @@ CREATE INDEX `idx_encounters_patient_id` ON `healthcare.encounters` (`patient_id
 CREATE INDEX `idx_encounters_admission_date` ON `healthcare.encounters` (`admission_date`);
 
 -- Create facilities table
-CREATE TABLE IF NOT EXISTS `banded-lexicon-459415-q2.healthproject_dataset.facilities` (
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.facilities` (
   `id` INT64,
   `facility_name` STRING NOT NULL,
   `facility_type` STRING,
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `banded-lexicon-459415-q2.healthproject_dataset.facil
 );
 
 -- Create patients table
-CREATE TABLE IF NOT EXISTS `banded-lexicon-459415-q2.healthproject_dataset.patients` (
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.patients` (
   `id` INT64,
   `medical_record_number` STRING NOT NULL,
   `first_name` STRING NOT NULL,
@@ -64,10 +64,10 @@ CREATE TABLE IF NOT EXISTS `banded-lexicon-459415-q2.healthproject_dataset.patie
 );
 
 -- Create index on patients table
-CREATE INDEX `idx_patients_last_updated` ON `banded-lexicon-459415-q2.healthproject_dataset.patients` (`last_updated`);
+CREATE INDEX `idx_patients_last_updated` ON `radic-healthcare.healthcare_dataset.patients` (`last_updated`);
 
 -- Create providers table
-CREATE TABLE IF NOT EXISTS `banded-lexicon-459415-q2.healthproject_dataset.providers` (
+CREATE TABLE IF NOT EXISTS `radic-healthcare.healthcare_dataset.providers` (
   `id` INT64,
   `npi_number` STRING NOT NULL,
   `first_name` STRING NOT NULL,
@@ -80,4 +80,4 @@ CREATE TABLE IF NOT EXISTS `banded-lexicon-459415-q2.healthproject_dataset.provi
 );
 
 -- Create index on providers table
-CREATE INDEX `idx_providers_last_updated` ON `banded-lexicon-459415-q2.healthproject_dataset.providers` (`last_updated`);
+CREATE INDEX `idx_providers_last_updated` ON `radic-healthcare.healthcare_dataset.providers` (`last_updated`);
