@@ -11,7 +11,7 @@ from airflow.providers.google.cloud.hooks.gcs import GCSHook
 
 # Constants
 GCP_PROJECT_ID = 'radic-healthcare'
-GCP_LOCATION = 'us-central1'
+GCP_LOCATION = 'us-east1'
 TEMP_LOCATION = 'gs://bucket-radic-healthcare/temp/'
 STAGING_LOCATION = 'gs://bucket-radic-healthcare/staging/'
 PIPELINE_ROOT = 'gs://bucket-radic-healthcare/pipeline-root/'
@@ -25,34 +25,53 @@ default_args = {
 }
 
 def make_dataflow_pipeline_tasks(task_id, template_name):
-    """Creates a pair of operators to create and run a Dataflow Data Pipeline"""
-    pipeline_id = f"{task_id}-pipeline"
-    job_id = f"{task_id}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+    """
+    Creates a pair of operators to create and run a Dataflow pipeline using the Pipelines API.
+    Assumes you have a Dataflow Flex Template JSON spec stored in GCS at:
+    gs://bucket-radic-healthcare/templates/{template_name}.json
+    """
 
+    pipeline_name = f"{task_id}-pipeline"
+    job_name = f"{task_id}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+
+    # Create pipeline operator - creates a pipeline resource in Dataflow
     create_pipeline = DataflowCreatePipelineOperator(
         task_id=f'create_{task_id}_pipeline',
         project_id=GCP_PROJECT_ID,
         location=GCP_LOCATION,
-        pipeline_id=pipeline_id,
+        pipeline_id=pipeline_name,
         body={
             "type": "PIPELINE_TYPE_BATCH",
-            "workload": {
-                "dataflowJobSpec": {
-                    "templateGcsPath": f"gs://bucket-radic-healthcare/templates/{template_name}.json"
-                }
-            },
+            "displayName": f"{task_id} pipeline",
             "labels": {
                 "env": "prod",
                 "team": "data"
             },
-            "displayName": f"{task_id} pipeline"
+            "workload": {
+                "dataflowFlexTemplateRequest": {
+                    "launchParameter": {
+                        "containerSpecGcsPath": f"gs://bucket-radic-healthcare/templates/{template_name}.json",
+                        "jobName": job_name,
+                        "parameters": {
+                            "tempLocation": TEMP_LOCATION,
+                            "stagingLocation": STAGING_LOCATION,
+                            # Add other pipeline-specific parameters here if needed
+                        },
+                        "environment": {
+                            "tempLocation": TEMP_LOCATION,
+                            "stagingLocation": STAGING_LOCATION,
+                        }
+                    }
+                }
+            }
         },
         gcp_conn_id='google_cloud_default'
     )
 
+    # Run pipeline operator - triggers execution of the created pipeline
     run_pipeline = DataflowRunPipelineOperator(
         task_id=f'run_{task_id}_pipeline',
-        pipeline_id=pipeline_id,
+        pipeline_id=pipeline_name,
         project_id=GCP_PROJECT_ID,
         location=GCP_LOCATION,
         gcp_conn_id='google_cloud_default'
@@ -63,11 +82,12 @@ def make_dataflow_pipeline_tasks(task_id, template_name):
 def get_sql_from_gcs(**kwargs):
     """Downloads SQL from GCS"""
     gcs_hook = GCSHook()
-    sql_content = gcs_hook.download_as_byte_array(
+    # Use download method (returns bytes), then decode
+    sql_bytes = gcs_hook.download(
         bucket_name='bucket-radic-healthcare',
         object_name='sql/create_star_schema.sql'
-    ).decode('utf-8')
-    return sql_content
+    )
+    return sql_bytes.decode('utf-8')
 
 with models.DAG(
     dag_id='radichealth_etl_daily',
@@ -93,7 +113,7 @@ with models.DAG(
                 "useLegacySql": False
             }
         },
-        location=GCP_LOCATION,
+        location="us-central1",
         project_id=GCP_PROJECT_ID,
     )
 
@@ -110,4 +130,5 @@ with models.DAG(
 
     end = EmptyOperator(task_id='end')
 
+    # Define dependencies
     start >> get_sql >> create_schema >> etl_operations >> end
