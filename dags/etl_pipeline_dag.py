@@ -87,5 +87,4 @@ with models.DAG(
     end = EmptyOperator(task_id='end')
 
     # Set dependencies
-    start >> get_sql >> create_schema
-    create_schema >> etl_tasks >> end
+    start >> get_sql >> create_schema >> etl_tasks >> end
