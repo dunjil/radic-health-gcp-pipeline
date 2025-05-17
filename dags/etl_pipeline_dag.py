@@ -3,8 +3,8 @@ from airflow import models
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
-from airflow.providers.google.cloud.operators.dataflow import DataflowStartPythonJobOperator
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
+from airflow.providers.apache.beam.operators.beam import BeamRunPythonPipelineOperator
 
 # Constants
 GCP_PROJECT_ID = 'radic-healthcare'
@@ -67,21 +67,23 @@ with models.DAG(
         'etl_patient',
         'etl_provider'
     ]:
-        dataflow_task = DataflowStartPythonJobOperator(
-            task_id=f"run_{etl_script}",  # Explicit task_id
-            python_file=f"{ETL_SCRIPTS_PATH}{etl_script}.py",
+        dataflow_task = BeamRunPythonPipelineOperator(
+            task_id=f"run_{etl_script}",
+            py_file=f"{ETL_SCRIPTS_PATH}{etl_script}.py",
             job_name=f"{etl_script}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
             project_id=GCP_PROJECT_ID,
             location=GCP_LOCATION,
             gcp_conn_id='google_cloud_default',
-            options={
-                "temp_location": TEMP_LOCATION,
-                "staging_location": STAGING_LOCATION,
+            runner='DataflowRunner',
+            pipeline_options={
+                "tempLocation": TEMP_LOCATION,
+                "stagingLocation": STAGING_LOCATION,
                 "project": GCP_PROJECT_ID,
                 "region": GCP_LOCATION,
-                "requirements_file": f"{ETL_SCRIPTS_PATH}requirements.txt",
-                "runner": "DataflowRunner",
-            }
+            },
+            py_requirements=['apache-beam[gcp]'],  # Add your dependencies here
+            py_interpreter='python3',
+            py_system_site_packages=False,
         )
         etl_tasks.append(dataflow_task)
 
@@ -89,5 +91,4 @@ with models.DAG(
 
     # Set dependencies
     start >> get_sql >> create_schema
-    create_schema >> etl_tasks
-    etl_tasks >> end
+    create_schema >> etl_tasks >> end
