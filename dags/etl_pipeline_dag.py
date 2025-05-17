@@ -68,6 +68,7 @@ with models.DAG(
         'etl_provider'
     ]:
         dataflow_task = BeamRunPythonPipelineOperator(
+            task_id=f'run_{etl_script}',
             py_file=f"{ETL_SCRIPTS_PATH}{etl_script}.py",
             dataflow_config=DataflowConfiguration(job_name=f"{etl_script}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",project_id=GCP_PROJECT_ID, location=GCP_LOCATION,),
             gcp_conn_id='google_cloud_default',
