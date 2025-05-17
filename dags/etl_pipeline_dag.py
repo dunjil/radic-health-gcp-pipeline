@@ -4,7 +4,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
-from airflow.providers.apache.beam.operators.beam import BeamRunPythonPipelineOperator
+from airflow.providers.apache.beam.operators.beam import BeamRunPythonPipelineOperator, DataflowConfiguration
 
 # Constants
 GCP_PROJECT_ID = 'radic-healthcare'
@@ -68,11 +68,8 @@ with models.DAG(
         'etl_provider'
     ]:
         dataflow_task = BeamRunPythonPipelineOperator(
-            task_id=f"run_{etl_script}",
             py_file=f"{ETL_SCRIPTS_PATH}{etl_script}.py",
-            job_name=f"{etl_script}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
-            project_id=GCP_PROJECT_ID,
-            location=GCP_LOCATION,
+            dataflow_config=DataflowConfiguration(job_name=f"{etl_script}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",project_id=GCP_PROJECT_ID, location=GCP_LOCATION,),
             gcp_conn_id='google_cloud_default',
             runner='DataflowRunner',
             pipeline_options={
@@ -81,7 +78,7 @@ with models.DAG(
                 "project": GCP_PROJECT_ID,
                 "region": GCP_LOCATION,
             },
-            py_requirements=['apache-beam[gcp]'],  # Add your dependencies here
+            # py_requirements=['apache-beam[gcp]'],  # Add your dependencies here
             py_interpreter='python3',
             py_system_site_packages=False,
         )
