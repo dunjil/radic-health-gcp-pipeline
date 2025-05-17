@@ -67,10 +67,8 @@ def run():
             p
             | 'Start' >> beam.Create([None])
             | 'ReadFromPostgres' >> beam.ParDo(ReadFromPostgres())
-            | 'TransformEncounter' >> beam.ParDo(TransformEncounter())
             | 'WriteToBigQuery' >> beam.io.WriteToBigQuery(
                 'radic-healthcare.healthcare_dataset.fact_encounter',
-                schema='encounter_id:STRING,patient_id:STRING,provider_id:STRING,facility_id:STRING,diagnosis_code:STRING,admission_date:DATE,discharge_date:DATE,date_key:INTEGER,length_of_stay:INTEGER,total_charges:FLOAT,payments_received:FLOAT,insurance_type:STRING,referral_provider_id:STRING',
                 write_disposition=beam.io.BigQueryDisposition.WRITE_APPEND,
                 create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED
             )

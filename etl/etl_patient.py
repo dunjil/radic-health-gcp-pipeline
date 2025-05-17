@@ -40,9 +40,8 @@ def run():
             p
             | 'Start' >> beam.Create([None])
             | 'ReadFromPostgres' >> beam.ParDo(ReadFromPostgres())
-            | 'Transform' >> beam.ParDo(TransformPatient())
             | 'WriteToBigQuery' >> beam.io.WriteToBigQuery(
-                'radic-healthcare.healthcare_dataset.dim_patient',
+                'radic-healthcare.healthcare_dataset.patients',
                 write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE,
                 create_disposition=beam.io.BigQueryDisposition.CREATE_NEVER
             )

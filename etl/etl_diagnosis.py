@@ -12,7 +12,7 @@ class ReadDiagnoses(beam.DoFn):
             port="5433"
         )
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM healthcare.diagnosis")
+        cursor.execute("SELECT * FROM healthcare.diagnoses")
         columns = [desc[0] for desc in cursor.description]
         for row in cursor.fetchall():
             yield dict(zip(columns, row))
@@ -37,9 +37,8 @@ def run():
             p
             | 'Start' >> beam.Create([None])
             | 'ReadDiagnoses' >> beam.ParDo(ReadDiagnoses())
-            | 'Transform' >> beam.ParDo(TransformDiagnosis())
             | 'WriteToBQ' >> beam.io.WriteToBigQuery(
-                'radic-healthcare.healthcare_dataset.dim_diagnosis',
+                'radic-healthcare.healthcare_dataset.diagnoses',
                 write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE,
                 create_disposition=beam.io.BigQueryDisposition.CREATE_NEVER
             )

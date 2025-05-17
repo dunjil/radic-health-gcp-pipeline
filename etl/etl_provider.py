@@ -37,9 +37,8 @@ def run():
             p
             | 'Start' >> beam.Create([None])
             | 'ReadProviders' >> beam.ParDo(ReadProviders())
-            | 'Transform' >> beam.ParDo(TransformProvider())
             | 'WriteToBQ' >> beam.io.WriteToBigQuery(
-                'radic-healthcare.healthcare_dataset.dim_provider',
+                'radic-healthcare.healthcare_dataset.providers',
                 write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE,
                 create_disposition=beam.io.BigQueryDisposition.CREATE_NEVER
             )
