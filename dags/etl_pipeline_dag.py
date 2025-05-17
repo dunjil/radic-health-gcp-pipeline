@@ -5,6 +5,11 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
 from airflow.providers.google.cloud.operators.dataflow import DataflowCreatePipelineOperator
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 default_args = {
     'owner': 'radichealth',
@@ -15,10 +20,13 @@ default_args = {
 }
 
 def make_dataflow_task(task_id, script_name):
-    return DataflowCreatePipelineOperator(
+    def log_task_execution(**context):
+        logger.info(f"Submitting Dataflow job for task: {task_id}")
+
+    task = DataflowCreatePipelineOperator(
         task_id=task_id,
         body={
-            "name": f'{task_id}-{{{{ ds_nodash }}}}', 
+            "name": f'{task_id}-{{{{ ds_nodash }}}}',
             "jobName": f'{task_id}-{{{{ ds_nodash }}}}',
             "projectId": 'radic-healthcare',
             "location": 'us-central1',
@@ -38,14 +46,22 @@ def make_dataflow_task(task_id, script_name):
         location='us-central1',
     )
 
+    task.execute = log_task_execution(task.execute)
+    return task
+
 # Function to read SQL from GCS
 def get_sql_from_gcs(**context):
-    gcs_hook = GCSHook()
-    sql_content = gcs_hook.download_as_byte_array(
-        bucket_name='bucket-radic-healthcare',
-        object_name='sql/create_star_schema.sql'
-    ).decode('utf-8')
-    return sql_content
+    try:
+        gcs_hook = GCSHook()
+        sql_content = gcs_hook.download_as_byte_array(
+            bucket_name='bucket-radic-healthcare',
+            object_name='sql/create_star_schema.sql'
+        ).decode('utf-8')
+        logger.info("Successfully retrieved SQL content from GCS.")
+        return sql_content
+    except Exception as e:
+        logger.error(f"Error retrieving SQL content from GCS: {e}")
+        raise
 
 with models.DAG(
     dag_id='radichealth_etl_daily',
@@ -57,14 +73,14 @@ with models.DAG(
 ) as dag:
 
     start = EmptyOperator(task_id='start')
-    
+
     # First, get the SQL content from GCS
     get_sql = PythonOperator(
         task_id='get_sql_content',
         python_callable=get_sql_from_gcs,
         provide_context=True,
     )
-    
+
     # Then execute the SQL in BigQuery
     create_schema = BigQueryInsertJobOperator(
         task_id='create_star_schema',
@@ -75,7 +91,7 @@ with models.DAG(
             }
         },
         location="us-central1",
-        project_id='radic-healthcare',  # Explicitly specify the project ID
+        project_id='radic-healthcare',
     )
 
     # Define ETL tasks
