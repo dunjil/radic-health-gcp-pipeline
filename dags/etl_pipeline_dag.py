@@ -33,7 +33,6 @@ def make_dataflow_pipeline_tasks(task_id, template_name):
     pipeline_name_full = f"projects/{GCP_PROJECT_ID}/locations/{GCP_LOCATION}/pipelines/{pipeline_id}"
 
     create_pipeline = DataflowCreatePipelineOperator(
-        task_id=f'create_{task_id}_pipeline',
         project_id=GCP_PROJECT_ID,
         location=GCP_LOCATION,
         body={
@@ -68,7 +67,6 @@ def make_dataflow_pipeline_tasks(task_id, template_name):
     )
 
     run_pipeline = DataflowRunPipelineOperator(
-        task_id=f'run_{task_id}_pipeline',
         pipeline_name=pipeline_id,
         project_id=GCP_PROJECT_ID,
         location=GCP_LOCATION,
@@ -110,7 +108,7 @@ with models.DAG(
                 "useLegacySql": False
             }
         },
-        location="us-central1",
+        location="us",
         project_id=GCP_PROJECT_ID,
     )
 
