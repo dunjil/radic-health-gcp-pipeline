@@ -30,7 +30,8 @@ def make_dataflow_task(task_id, script_name):
                 "script": f'gs://bucket-radic-healthcare/etl/{script_name}.py',
                 "options": {
                     'runner': 'DataflowRunner',
-                    # Add other options as needed
+                    'project': 'radic-healthcare',
+                    'region': 'us-central1',  
                 }
             }
         },
