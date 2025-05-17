@@ -68,7 +68,7 @@ with models.DAG(
         'etl_provider'
     ]:
         dataflow_task = DataflowStartPythonJobOperator(
-            task_id=f"run_{etl_script}",
+            task_id=f"run_{etl_script}",  # Explicit task_id
             python_file=f"{ETL_SCRIPTS_PATH}{etl_script}.py",
             job_name=f"{etl_script}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
             project_id=GCP_PROJECT_ID,
