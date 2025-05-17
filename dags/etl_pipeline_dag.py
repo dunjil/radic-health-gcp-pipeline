@@ -69,8 +69,9 @@ with models.DAG(
     ]:
         dataflow_task = BeamRunPythonPipelineOperator(
             task_id=f'run_{etl_script}',
+        
             py_file=f"{ETL_SCRIPTS_PATH}{etl_script}.py",
-            dataflow_config=DataflowConfiguration(job_name=f"{etl_script}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",project_id=GCP_PROJECT_ID, location=GCP_LOCATION,service_account="radic-dataflow-sa@radic-healthcare.iam.gserviceaccount.com"),
+            dataflow_config=DataflowConfiguration(job_name=f"{etl_script}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",project_id=GCP_PROJECT_ID, location=GCP_LOCATION,service_account="radic-dataflow-sa@radic-healthcare.iam.gserviceaccount.com",wait_until_finished=True),
             gcp_conn_id='google_cloud_default',
             runner='DataflowRunner',
             pipeline_options={
@@ -88,4 +89,5 @@ with models.DAG(
     end = EmptyOperator(task_id='end')
 
     # Set dependencies
-    start >> get_sql >> create_schema >> etl_tasks >> end
+    start >> get_sql >> create_schema
+    create_schema >> etl_tasks >> end
