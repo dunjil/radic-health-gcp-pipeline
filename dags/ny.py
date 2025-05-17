@@ -107,14 +107,19 @@ with models.DAG(
         configuration={
             "query": {
                 "query": "{{ task_instance.xcom_pull(task_ids='get_sql_content') }}",
-                "useLegacySql": False
+                "useLegacySql": False,
+                "destinationTable": {
+                    "projectId": GCP_PROJECT_ID,
+                    "datasetId": 'radic_healthcare',
+                    "tableId": 'star_schema'
+                },
+                "writeDisposition": "WRITE_TRUNCATE"
             }
         },
-        location="us-central1",
-        project_id='radic-healthcare',  # Explicitly specify the project ID
+        location=GCP_LOCATION,
+        project_id=GCP_PROJECT_ID,
+        gcp_conn_id='google_cloud_default'
     )
-
-        
 
     # Create all Dataflow tasks
     etl_operations = []
