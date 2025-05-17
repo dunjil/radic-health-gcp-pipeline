@@ -2,6 +2,11 @@ import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 import psycopg2
 import logging
+from typing import Dict, Any
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class ReadFacilities(beam.DoFn):
     def process(self, element):
@@ -13,21 +18,17 @@ class ReadFacilities(beam.DoFn):
                 host="olye3.h.filess.io",
                 port="5433"
             )
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM healthcare.facilities")
-            columns = [desc[0] for desc in cursor.description]
-            rows = cursor.fetchall()
-        
-            for row in rows:
-                yield dict(zip([desc[0] for desc in cursor.description], row))
-
-            cursor.close()
-            conn.close()
+            with conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT * FROM healthcare.facilities")
+                    columns = [desc[0] for desc in cursor.description]
+                    for row in cursor.fetchall():
+                        yield dict(zip(columns, row))
         except Exception as e:
-            logging.error(f"Error reading from PostgreSQL: {e}")
+            logger.error(f"Error reading from PostgreSQL: {e}")
             raise
 
-def run():
+def run_pipeline():
     options = PipelineOptions(
         runner='DataflowRunner',
         project='radic-healthcare',
@@ -41,11 +42,14 @@ def run():
             | 'Start' >> beam.Create([None])
             | 'ReadFacilities' >> beam.ParDo(ReadFacilities())
             | 'WriteToBQ' >> beam.io.WriteToBigQuery(
-                'radic-healthcare.healthcare_dataset.facilities',
+                table='radic-healthcare.healthcare_dataset.facilities',
                 write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE,
                 create_disposition=beam.io.BigQueryDisposition.CREATE_NEVER
             )
         )
 
 if __name__ == '__main__':
-    run()
+    try:
+        run_pipeline()
+    except Exception as e:
+        logger.error(f"Pipeline failed with exception: {e}")
