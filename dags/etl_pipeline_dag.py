@@ -27,20 +27,17 @@ default_args = {
 def make_dataflow_pipeline_tasks(task_id, template_name):
     """
     Creates a pair of operators to create and run a Dataflow pipeline using the Pipelines API.
-    Assumes you have a Dataflow Flex Template JSON spec stored in GCS at:
-    gs://bucket-radic-healthcare/templates/{template_name}.json
     """
-
-    pipeline_name = f"{task_id}-pipeline"
+    pipeline_id = f"{task_id}-pipeline"
     job_name = f"{task_id}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+    pipeline_name_full = f"projects/{GCP_PROJECT_ID}/locations/{GCP_LOCATION}/pipelines/{pipeline_id}"
 
-    # Create pipeline operator - creates a pipeline resource in Dataflow
     create_pipeline = DataflowCreatePipelineOperator(
         task_id=f'create_{task_id}_pipeline',
         project_id=GCP_PROJECT_ID,
         location=GCP_LOCATION,
-        pipeline_id=pipeline_name,
         body={
+            "name": pipeline_name_full,
             "type": "PIPELINE_TYPE_BATCH",
             "displayName": f"{task_id} pipeline",
             "labels": {
@@ -61,17 +58,18 @@ def make_dataflow_pipeline_tasks(task_id, template_name):
                             "tempLocation": TEMP_LOCATION,
                             "stagingLocation": STAGING_LOCATION,
                         }
-                    }
+                    },
+                    "projectId": GCP_PROJECT_ID,
+                    "location": GCP_LOCATION,
                 }
             }
         },
         gcp_conn_id='google_cloud_default'
     )
 
-    # Run pipeline operator - triggers execution of the created pipeline
     run_pipeline = DataflowRunPipelineOperator(
         task_id=f'run_{task_id}_pipeline',
-        pipeline_id=pipeline_name,
+        pipeline_name=pipeline_id,
         project_id=GCP_PROJECT_ID,
         location=GCP_LOCATION,
         gcp_conn_id='google_cloud_default'
@@ -82,7 +80,6 @@ def make_dataflow_pipeline_tasks(task_id, template_name):
 def get_sql_from_gcs(**kwargs):
     """Downloads SQL from GCS"""
     gcs_hook = GCSHook()
-    # Use download method (returns bytes), then decode
     sql_bytes = gcs_hook.download(
         bucket_name='bucket-radic-healthcare',
         object_name='sql/create_star_schema.sql'
@@ -130,5 +127,4 @@ with models.DAG(
 
     end = EmptyOperator(task_id='end')
 
-    # Define dependencies
     start >> get_sql >> create_schema >> etl_operations >> end
